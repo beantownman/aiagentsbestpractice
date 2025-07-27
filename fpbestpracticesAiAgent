@@ -1,0 +1,290 @@
+---
+title: Functional Programming Best Practices for Frontend Developers
+description: A pragmatic guide for applying functional programming in JavaScript/TypeScript projects using Next.js, React.js, and Sanity.
+---
+
+# Functional Programming Best Practices
+
+Welcome to the team! This guide outlines practical, functional programming (FP) best practices for frontend development with JavaScript/TypeScript, Next.js, React.js, and Sanity. It is designed to help you write robust, maintainable, and testable code, and to serve as a reference for code reviews and day-to-day development.
+
+---
+
+## Table of Contents
+
+1. [Core FP Principles](#core-fp-principles)
+2. [Immutability](#immutability)
+3. [Pure Functions](#pure-functions)
+4. [Managing Side Effects](#managing-side-effects)
+5. [FP Patterns in React/Next.js](#fp-patterns-in-reactnextjs)
+6. [Testing FP Code with Jest](#testing-fp-code-with-jest)
+7. [Linting with Biome](#linting-with-biome)
+8. [JSDoc for FP Code](#jsdoc-for-fp-code)
+9. [Code Review Checklist](#code-review-checklist)
+10. [Pragmatic Advice & Common Pitfalls](#pragmatic-advice--common-pitfalls)
+11. [Refactoring Legacy Code](#refactoring-legacy-code)
+
+---
+
+## Core FP Principles
+
+Functional programming is a paradigm that treats computation as the evaluation of mathematical functions and avoids changing state and mutable data. Key principles:
+
+- **Immutability**: Data is never mutated; instead, new data structures are created.
+- **Pure Functions**: Functions have no side effects and return the same output for the same input.
+- **First-Class Functions**: Functions are treated as values and can be passed around.
+- **Declarative Code**: Focus on what to do, not how to do it.
+
+### Example: Declarative vs Imperative
+
+```js
+// Imperative
+const numbers = [1, 2, 3, 4];
+let doubled = [];
+for (let i = 0; i < numbers.length; i++) {
+  doubled.push(numbers[i] * 2);
+}
+
+// Declarative (Functional)
+const doubled = numbers.map(n => n * 2);
+```
+
+---
+
+## Immutability
+
+Avoid mutating objects, arrays, or state. Use spread syntax or methods that return new values.
+
+### Example: Array/Object Immutability
+
+```js
+// Bad: Mutates original array
+numbers.push(5);
+
+// Good: Returns new array
+const newNumbers = [...numbers, 5];
+
+// Bad: Mutates object
+user.name = 'Alice';
+
+// Good: Returns new object
+const updatedUser = { ...user, name: 'Alice' };
+```
+
+### In React State
+
+```js
+// Bad
+setItems(items);
+items.push(newItem);
+
+// Good
+setItems(prev => [...prev, newItem]);
+```
+
+---
+
+## Pure Functions
+
+A pure function:
+- Returns the same output for the same input
+- Has no side effects (does not modify external state, perform I/O, etc.)
+
+### Example: Pure vs Impure
+
+```js
+// Impure
+let counter = 0;
+function increment() {
+  counter++;
+}
+
+// Pure
+function increment(n) {
+  return n + 1;
+}
+```
+
+---
+
+## Managing Side Effects
+
+Side effects (e.g., API calls, DOM manipulation) should be isolated and managed carefully, especially in React.
+
+- Use React hooks like `useEffect` for side effects.
+- Keep side-effecting code out of pure functions.
+
+### Example: Isolating Side Effects
+
+```js
+// Pure function
+function calculateTotal(items) {
+  return items.reduce((sum, item) => sum + item.price, 0);
+}
+
+// Side effect in React
+useEffect(() => {
+  fetchData();
+}, []);
+```
+
+---
+
+## FP Patterns in React/Next.js
+
+- Use functional components and hooks.
+- Prefer composition over inheritance.
+- Use higher-order functions/components for reusability.
+- Avoid stateful logic outside React components/hooks.
+
+### Example: Composing Functions
+
+```js
+const add = x => y => x + y;
+const increment = add(1);
+const double = x => x * 2;
+
+const process = x => double(increment(x));
+
+process(3); // 8
+```
+
+### Example: Higher-Order Component
+
+```js
+function withLoading(Component) {
+  return function WrappedComponent({ isLoading, ...props }) {
+    if (isLoading) return <div>Loading...</div>;
+    return <Component {...props} />;
+  };
+}
+```
+
+---
+
+## Testing FP Code with Jest
+
+- Test pure functions in isolation.
+- Mock side effects.
+- Use property-based testing for functions if possible.
+
+### Example: Testing a Pure Function
+
+```js
+// sum.js
+export function sum(a, b) {
+  return a + b;
+}
+
+// sum.test.js
+import { sum } from './sum';
+test('adds numbers', () => {
+  expect(sum(1, 2)).toBe(3);
+});
+```
+
+---
+
+## Linting with Biome
+
+- Use Biome to enforce code style and catch anti-patterns.
+- Configure Biome to warn on mutation, prefer const, etc.
+- Run Biome before every commit.
+
+### Example: Biome Config (snippet)
+
+```json
+{
+  "rules": {
+    "variables": {
+      "preferConst": true
+    },
+    "stylistic": {
+      "quotes": "double"
+    }
+  }
+}
+```
+
+---
+
+## JSDoc for FP Code
+
+- Document all exported functions with JSDoc.
+- Describe parameters, return values, and side effects (if any).
+
+### Example: JSDoc for a Pure Function
+
+```js
+/**
+ * Adds two numbers.
+ * @param {number} a - First number
+ * @param {number} b - Second number
+ * @returns {number} Sum of a and b
+ */
+function sum(a, b) {
+  return a + b;
+}
+```
+
+---
+
+## Code Review Checklist
+
+- [ ] Are all functions pure unless a side effect is required?
+- [ ] Is state immutable throughout?
+- [ ] Are side effects isolated (e.g., in `useEffect`)?
+- [ ] Is code declarative and readable?
+- [ ] Are functions small and focused?
+- [ ] Are all exported functions documented with JSDoc?
+- [ ] Are tests present for all pure functions?
+- [ ] Does the code pass Biome linting?
+- [ ] Are there unnecessary dependencies or abstractions?
+- [ ] Is legacy code being refactored towards FP where practical?
+
+---
+
+## Pragmatic Advice & Common Pitfalls
+
+- **Be practical**: Not everything needs to be 100% pure—use FP where it adds clarity and maintainability.
+- **Avoid over-abstraction**: Don't create unnecessary higher-order functions/components.
+- **Watch for hidden mutations**: Methods like `Array.prototype.sort` mutate arrays.
+- **Don't ignore performance**: Sometimes copying large objects/arrays can be expensive—profile if needed.
+- **Interop with non-FP code**: Be careful when integrating with libraries or legacy code that isn't FP.
+
+---
+
+## Refactoring Legacy Code
+
+1. **Identify Mutations**: Use Biome and code review to spot mutable patterns.
+2. **Refactor to Pure Functions**: Extract logic into pure functions where possible.
+3. **Isolate Side Effects**: Move side effects into React hooks or dedicated modules.
+4. **Add Tests**: Cover new pure functions with Jest tests.
+5. **Document**: Use JSDoc for all refactored code.
+
+### Example: Refactoring a Mutating Function
+
+```js
+// Legacy
+function addToCart(item) {
+  cart.push(item);
+}
+
+// Refactored
+/**
+ * Returns a new cart array with the item added.
+ * @param {Array} cart - Current cart
+ * @param {Object} item - Item to add
+ * @returns {Array} New cart
+ */
+function addToCart(cart, item) {
+  return [...cart, item];
+}
+```
+
+---
+
+## Conclusion
+
+Functional programming helps you write safer, more maintainable code. Use this guide as a reference, and don't hesitate to ask for help or clarification during code reviews or pairing sessions.
+
+Happy coding! 
