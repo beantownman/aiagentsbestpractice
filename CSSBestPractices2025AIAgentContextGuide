@@ -1,0 +1,564 @@
+# CSS Best Practices 2025 - AI Agent Context Guide
+
+## Overview
+This document provides modern CSS best practices for AI coding agents, focusing on 2025 specifications and avoiding outdated patterns like media queries, BEM, and SCSS.
+
+## 🚫 AVOID These Patterns
+
+### ❌ Wrong Element Targeting
+```css
+/* DON'T: Styling generic elements */
+div { margin: 20px; }
+p { color: blue; }
+
+/* DO: Use semantic classes with CSS Modules */
+.content { margin: var(--space-md); }
+.description { color: var(--text-secondary); }
+```
+
+### ❌ Deep Nesting
+```css
+/* DON'T: Over-nesting */
+.header .nav .menu .item .link { }
+
+/* DO: Flat structure with CSS Modules */
+.navLink { }
+.menuItem { }
+```
+
+### ❌ Specificity Wars
+```css
+/* DON'T: High specificity */
+#header .nav ul li a.active { }
+
+/* DO: Use @layer for controlled cascade */
+@layer base, components, utilities;
+@layer components {
+  .navLink { }
+}
+```
+
+## ✅ MODERN PATTERNS TO USE
+
+### 1. Container Queries (No Media Queries)
+
+```css
+/* Component-based responsive design */
+.card {
+  container-type: inline-size;
+  container-name: card;
+}
+
+@container card (width >= 300px) {
+  .cardContent {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-md);
+  }
+}
+
+@container card (width >= 500px) {
+  .cardContent {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+```
+
+### 2. CSS Modules Scoping
+
+```css
+/* styles.module.css */
+.component {
+  --local-accent: oklch(70% 0.19 274);
+  container-type: inline-size;
+}
+
+.title {
+  color: var(--local-accent);
+  font-size: clamp(1.25rem, 4vw, 2rem);
+}
+
+/* Composition */
+.primaryButton {
+  composes: button from './base.module.css';
+  background: var(--local-accent);
+}
+```
+
+### 3. @scope Rule for Contextual Styling
+
+```css
+@scope (.dashboard) {
+  :scope {
+    --dashboard-bg: var(--surface-1);
+    --dashboard-text: var(--text-primary);
+  }
+  
+  .widget {
+    background: var(--dashboard-bg);
+    color: var(--dashboard-text);
+    container-type: inline-size;
+  }
+  
+  .widgetTitle {
+    font-weight: 600;
+  }
+}
+
+@scope (.widget) to (.nestedWidget) {
+  /* Styles apply to .widget but stop at .nestedWidget */
+  .content {
+    padding: var(--space-sm);
+  }
+}
+```
+
+### 4. Cascade Layers Architecture
+
+```css
+@layer reset, base, components, utilities, overrides;
+
+@layer reset {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+}
+
+@layer base {
+  :root {
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 2rem;
+  }
+}
+
+@layer components {
+  .button {
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-sm);
+  }
+}
+
+@layer utilities {
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+}
+```
+
+### 5. Modern Layout with Subgrid
+
+```css
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-lg);
+}
+
+.card {
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 3;
+}
+
+.cardHeader { grid-row: 1; }
+.cardContent { grid-row: 2; }
+.cardFooter { grid-row: 3; }
+```
+
+### 6. CSS Custom Properties System
+
+```css
+/* Design tokens */
+:root {
+  /* Spacing scale */
+  --space-3xs: 0.125rem;
+  --space-2xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+  
+  /* Color system with OKLCH */
+  --primary-50: oklch(95% 0.02 274);
+  --primary-500: oklch(70% 0.19 274);
+  --primary-900: oklch(30% 0.15 274);
+  
+  /* Fluid typography */
+  --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  --text-sm: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);
+  --text-base: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);
+  --text-lg: clamp(1.125rem, 1rem + 0.625vw, 1.25rem);
+}
+
+/* Component-level custom properties */
+.button {
+  --button-bg: var(--primary-500);
+  --button-text: white;
+  --button-padding: var(--space-sm) var(--space-md);
+  
+  background: var(--button-bg);
+  color: var(--button-text);
+  padding: var(--button-padding);
+}
+```
+
+### 7. Logical Properties
+
+```css
+/* Use logical properties instead of physical */
+.component {
+  /* DON'T: margin-left, margin-right */
+  margin-inline: var(--space-md);
+  
+  /* DON'T: padding-top, padding-bottom */
+  padding-block: var(--space-sm);
+  
+  /* DON'T: border-left */
+  border-inline-start: 1px solid var(--border-color);
+  
+  /* DON'T: text-align: left */
+  text-align: start;
+}
+```
+
+### 8. Modern Selectors
+
+```css
+/* :has() for parent selection */
+.card:has(.cardImage) {
+  grid-template-rows: auto 1fr auto;
+}
+
+.form:has(.error) {
+  border-color: var(--error-color);
+}
+
+/* :is() and :where() for grouping */
+:is(h1, h2, h3, h4, h5, h6) {
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+:where(.button, .link) {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+```
+
+### 9. Style Queries for Component Theming
+
+```css
+.component {
+  --theme: light;
+}
+
+@container style(--theme: dark) {
+  .component {
+    background: var(--dark-bg);
+    color: var(--dark-text);
+  }
+}
+
+@container style(--size: large) {
+  .component {
+    padding: var(--space-lg);
+    font-size: var(--text-lg);
+  }
+}
+```
+
+### 10. View Transitions
+
+```css
+/* Smooth page transitions */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.3s;
+}
+
+::view-transition-old(root) {
+  animation-name: slide-out;
+}
+
+::view-transition-new(root) {
+  animation-name: slide-in;
+}
+
+@keyframes slide-out {
+  to { transform: translateX(-100%); }
+}
+
+@keyframes slide-in {
+  from { transform: translateX(100%); }
+}
+```
+
+### 11. Anchor Positioning
+
+```css
+/* Modern tooltip positioning */
+.tooltip {
+  position: absolute;
+  position-anchor: --trigger;
+  position-area: top;
+  margin-block-end: var(--space-xs);
+}
+
+.trigger {
+  anchor-name: --trigger;
+}
+
+/* Fallback positioning */
+@supports not (anchor-name: --trigger) {
+  .tooltip {
+    position: absolute;
+    top: calc(100% + var(--space-xs));
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+```
+
+### 12. Modern Viewport Units
+
+```css
+/* Use new viewport units for better mobile support */
+.fullHeight {
+  /* DON'T: height: 100vh; */
+  height: 100dvh; /* Dynamic viewport height */
+}
+
+.header {
+  height: 10svh; /* Small viewport height */
+}
+
+.sidebar {
+  height: 100lvh; /* Large viewport height */
+}
+```
+
+## 🎯 IMPLEMENTATION CHECKLIST
+
+### Before Writing CSS:
+- [ ] Use CSS Modules for scoping
+- [ ] Define custom properties at component level
+- [ ] Use container queries instead of media queries
+- [ ] Implement logical properties
+- [ ] Use modern color functions (oklch, color-mix)
+- [ ] Apply cascade layers for organization
+
+### Layout Strategy:
+- [ ] CSS Grid for 2D layouts
+- [ ] Flexbox for 1D layouts
+- [ ] Subgrid for nested grid alignment
+- [ ] Container queries for responsive components
+- [ ] Anchor positioning for tooltips/popovers
+
+### Performance:
+- [ ] Use `contain` property for optimization
+- [ ] Implement `content-visibility` for large lists
+- [ ] Use `will-change` sparingly
+- [ ] Prefer transforms over layout properties for animations
+
+## 🔧 UTILITY PATTERNS
+
+### Responsive Typography
+```css
+.fluidText {
+  font-size: clamp(1rem, 2.5vw, 2rem);
+  line-height: calc(1em + 0.5rem);
+}
+```
+
+### Intrinsic Sizing
+```css
+.autoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+  gap: var(--space-md);
+}
+```
+
+### Color Mixing
+```css
+.dynamicColor {
+  background: color-mix(in oklch, var(--primary-500) 80%, transparent);
+}
+```
+
+### Modern Reset
+```css
+@layer reset {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  
+  body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    line-height: 1.5;
+  }
+  
+  img,
+  picture,
+  video,
+  canvas,
+  svg {
+    display: block;
+    max-width: 100%;
+  }
+  
+  input,
+  button,
+  textarea,
+  select {
+    font: inherit;
+  }
+}
+```
+
+### Container Query Patterns
+```css
+/* Size-based queries */
+@container (width >= 400px) {
+  .component { grid-template-columns: 1fr 1fr; }
+}
+
+/* Aspect ratio queries */
+@container (aspect-ratio >= 16/9) {
+  .component { flex-direction: row; }
+}
+
+/* Height queries */
+@container (height >= 300px) {
+  .component { justify-content: space-between; }
+}
+```
+
+## 🚨 COMMON MISTAKES TO AVOID
+
+1. **Using px instead of relative units**
+2. **Setting styles in multiple places (specificity conflicts)**
+3. **Not using CSS custom properties for repeated values**
+4. **Mixing physical and logical properties**
+5. **Over-scoping or under-scoping styles**
+6. **Using !important instead of cascade layers**
+7. **Not leveraging container queries for responsive design**
+8. **Ignoring modern selector capabilities (:has, :is, :where)**
+9. **Using old viewport units (vh) instead of dynamic units (dvh)**
+10. **Not utilizing subgrid for complex layouts**
+
+## 📚 BROWSER SUPPORT NOTES
+
+- Container Queries: Supported in all evergreen browsers (2023+)
+- @scope: Supported in Chrome 118+, Firefox 120+
+- :has(): Supported in all evergreen browsers (2022+)
+- Cascade Layers: Supported in all evergreen browsers (2022+)
+- Subgrid: Supported in Firefox, Chrome 117+, Safari 16+
+- Anchor Positioning: Chrome 125+, experimental in other browsers
+- Style Queries: Chrome 111+, experimental support
+- View Transitions: Chrome 111+, experimental in other browsers
+
+## 🎨 DESIGN SYSTEM INTEGRATION
+
+### Token Architecture
+```css
+/* Design tokens organized by category */
+:root {
+  /* Colors - OKLCH for better perceptual uniformity */
+  --color-primary: oklch(70% 0.19 274);
+  --color-secondary: oklch(60% 0.15 320);
+  --color-success: oklch(65% 0.18 142);
+  --color-warning: oklch(75% 0.15 85);
+  --color-error: oklch(60% 0.20 25);
+  
+  /* Semantic colors */
+  --color-text-primary: oklch(20% 0.02 274);
+  --color-text-secondary: oklch(45% 0.05 274);
+  --color-surface-1: oklch(98% 0.01 274);
+  --color-surface-2: oklch(95% 0.02 274);
+  
+  /* Typography scale */
+  --font-size-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  --font-size-sm: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);
+  --font-size-base: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);
+  --font-size-lg: clamp(1.125rem, 1rem + 0.625vw, 1.25rem);
+  --font-size-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);
+  
+  /* Spacing system */
+  --space-px: 1px;
+  --space-0: 0;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  
+  /* Border radius */
+  --radius-none: 0;
+  --radius-sm: 0.125rem;
+  --radius-base: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-full: 9999px;
+}
+```
+
+### Component Composition
+```css
+/* Base button component */
+.button {
+  --button-bg: var(--color-primary);
+  --button-text: white;
+  --button-padding-x: var(--space-4);
+  --button-padding-y: var(--space-2);
+  --button-radius: var(--radius-md);
+  
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-block: var(--button-padding-y);
+  padding-inline: var(--button-padding-x);
+  background: var(--button-bg);
+  color: var(--button-text);
+  border-radius: var(--button-radius);
+  border: none;
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Variant compositions */
+.buttonSecondary {
+  composes: button;
+  --button-bg: transparent;
+  --button-text: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+
+.buttonLarge {
+  composes: button;
+  --button-padding-x: var(--space-6);
+  --button-padding-y: var(--space-3);
+  font-size: var(--font-size-lg);
+}
+```
+
+---
+
+**For AI Agents**: Always prioritize modern CSS features over legacy patterns. Use this document as a reference for generating maintainable, performant, and future-proof CSS code. Focus on component-based architecture with CSS Modules, leverage container queries for responsive design, and utilize cascade layers for predictable styling.
